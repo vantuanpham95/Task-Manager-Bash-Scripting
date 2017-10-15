@@ -38,20 +38,24 @@ function add(){
 
 
 function list(){
-	echo "Undone"
 	cat task_manager.txt | grep "<undone>" | awk -F'<undone>' '{print $2}' > task_undone.temp
+	
+	ud=$(echo $(cat task_undone.temp | wc -l))
+	echo "Undone ($ud tasks):" 
 	nl task_undone.temp
 	rm -rf task_undone.temp
 	
 	echo ""
-	echo "Low priority"
 	cat task_manager.txt | grep "<low_prioriry>"| awk -F'<low_prioriry>' '{print $2}' > task_low_priority.temp
+	ud=$(echo $(cat task_low_priority.temp | wc -l))
+	echo "Low priority ($ud tasks):" 
 	nl task_low_priority.temp
 	rm -rf task_low_priority.temp
 	
 	echo ""
-	echo "Done"
 	cat task_manager.txt | grep "<done>"| awk -F'<done>' '{print $2}' > task_done.temp
+	ud=$(echo $(cat task_done.temp | wc -l))
+	echo "Done ($ud tasks:)" 
 	nl task_done.temp
 	rm -rf task_done.temp
 
@@ -60,20 +64,26 @@ function list(){
 
 function search(){
 	echo "Here is your search: "
-	echo "Undone"
+	
 	cat task_manager.txt | grep "$cm" | grep "<undone>" | awk -F'<undone>' '{print $2}' > task_undone.temp
+	ud=$(echo $(cat task_undone.temp | wc -l))
+	echo "Undone ($ud tasks):" 
 	nl task_undone.temp
 	rm -rf task_undone.temp
 
 	echo ""
 	echo "Low priority"
 	cat task_manager.txt | grep "$cm" | grep "<low_prioriry>"| awk -F'<low_prioriry>' '{print $2}' > task_low_priority.temp
+	ud=$(echo $(cat task_low_priority | wc -l))
+	echo "Low priority ($ud tasks):" 
 	nl task_low_priority.temp
 	rm -rf task_low_priority.temp
 	
 	echo ""
 	echo "Done"
 	cat task_manager.txt | grep "$cm" | grep "<done>"| awk -F'<done>' '{print $2}' > task_done.temp
+	ud=$(echo $(cat task_done.temp | wc -l))
+	echo "Done ($ud tasks:)" 
 	nl task_done.temp
 	rm -rf task_done.temp
 }
@@ -102,6 +112,8 @@ function markdone(){
 	cat task_manager.txt | grep -iw "$cm" | awk -F'<undone>' '{print $2}' > task_done.temp
 	cat task_manager.txt | grep -iw "$cm" | awk -F'<low_prioriry>' '{print $2}' >> task_done.temp
 
+	echo "Mark task $cm as done successfully!"
+
 	#Danh dau cac task done co prefix la <done>
 	nl -s "<done>" task_done.temp > make_done.temp
 
@@ -113,8 +125,6 @@ function markdone(){
 	rm -rf task_done.temp
 	rm -rf make_done.temp
 
-
-	echo "Mark task $cm as done successfully!"
 }
 
 function setlowpriority(){
@@ -184,5 +194,27 @@ function mod(){
 	fi
 }
 
+function usage(){
+	echo "List of fuctions available: "
+	echo "1. Add - example: ./$me add Mua banh trung thu"
+	echo "2. Remove - example: ./$me remove trung thu"
+	echo "3. List - example: ./$me list"
+	echo "4. Search - example: ./$me search"
+	echo "5. Clean - example: ./$me clean"
+	echo "6. Modify - example: ./$me mod or ./$me mod string1 @ string2"
+	echo "7. Mark done - example: ./$me markdone Mua banh"
+	echo "8. Set Low priority - example: ./$me setlowpriority Mua"
+}
 
-$args
+#$args
+case $args in 
+	add) $args;;
+	remove) $args;;
+	list) $args;;
+	search) $args;;
+	clean) $args;;
+	mod) $args;;
+	markdone) $args;;
+	setlowpriority) $args;;
+	*) usage;;
+esac

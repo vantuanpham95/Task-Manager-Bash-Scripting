@@ -19,7 +19,7 @@ RX_packets_dropped=`cat /sys/class/net/$net_iface/statistics/rx_dropped`
 #TX_packets_dropped=`ifconfig $net_iface | grep "TX packets" | awk '{print $4}' | awk -F':' '{print $2}'`
 TX_packets_dropped=`cat /sys/class/net/$net_iface/statistics/tx_dropped`
 
-now_time=`date -d now | awk -F' ' '{print $2, $3, $4}'`
+now_time=`LANG=en_us_88591 date -d now | awk -F' ' '{print $2, $3, $4}'`
 
 #Get the file name of this bash scripts file
 me=`basename "$0"`

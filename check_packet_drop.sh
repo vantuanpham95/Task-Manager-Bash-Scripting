@@ -42,30 +42,33 @@ last_TX_packets_dropped=`tail -n1 $ck | awk -F' ' '{print $7}'`
 
 echo "$now_time RX_packets_dropped $RX_packets_dropped TX_packets_dropped $TX_packets_dropped" >> $ck
 
-RX_num=`expr $RX_packets_dropped - $last_RX_packets_dropped`
-TX_num=`expr $TX_packets_dropped - $last_TX_packets_dropped`
-
-RX_num=7
-TX_num=8
-
-
-if [ 0 <= $RX_num && $RX_num <= $RX_packets_dropped_warn ] || [ 0 <= $TX_num && $TX_num <= $TX_packets_dropped_warn ]
+if [[ -z $last_RX_packets_dropped ]] && [[ -z $last_TX_packets_dropped ]]
 then
-	echo "Interface $net_iface: OK - Nums of RX packets dropped is $RX_num - Nums of TX packets dropped is $TX_num"
-	exit $STATE_OK
+	last_RX_packets_dropped=0
+	last_TX_packets_dropped=0
+fi
 
-elif [ $RX_packets_dropped_warn <= $RX_num && $RX_num <= $RX_packets_dropped_crit ] || [ $TX_packets_dropped_warn <= $TX_num && $TX_num <= $TX_packets_dropped_crit ]
+RX_num=$(expr $RX_packets_dropped - $last_RX_packets_dropped)
+TX_num=$(expr $TX_packets_dropped - $last_TX_packets_dropped)
+
+#RX_num=12
+#TX_num=5
+
+
+if [[ ! $RX_num -lt $RX_packets_dropped_crit ]] || [[ ! $TX_num -lt $TX_packets_dropped_crit ]]
 then
-	echo "Interface $net_iface: Warning - Nums of RX packets dropped is $RX_num - Nums of TX packets dropped is $TX_num"
-	exit $STATE_WARNING
-	
-	elif [ $RX_num => $RX_packets_dropped_crit ] || [ $TX_num => $TX_packets_dropped_crit ]
-
+	echo "Interface $net_iface: Critical - Nums of RX packets dropped is $RX_num - Nums of TX packets dropped is $TX_num"
+	exit $STATE_CRIT
+	elif { [[ ! $RX_num -lt $RX_packets_dropped_warn ]] && [[ $RX_num -lt $RX_packets_dropped_crit ]]; } || { [[ ! $TX_num -lt $TX_packets_dropped_warn ]] && [[ $TX_num -lt $TX_packets_dropped_crit ]]; }
 	then
-		echo "Interface $net_iface: Critical - Nums of RX packets dropped is $RX_num - Nums of TX packets dropped is $TX_num"
-		exit $STATE_CRIT
-	else
-		echo "Interface $net_iface: Status Unknown :("
-		exit $STATE_UNKNOWN
+		echo "Interface $net_iface: Warning - Nums of RX packets dropped is $RX_num - Nums of TX packets dropped is $TX_num"
+		exit $STATE_WARNING
+		elif { [[ ! $RX_num -lt 0 ]] && [[ $RX_num -lt $RX_packets_dropped_warn ]]; } && { [[ ! $TX_num -lt 0 ]] && [[ $TX_num -lt $TX_packets_dropped_warn ]]; }
+		then
+			echo "Interface $net_iface: OK - Nums of RX packets dropped is $RX_num - Nums of TX packets dropped is $TX_num"
+			exit $STATE_OK
+			else                    
+                               echo "Interface $net_iface: Status Unknown :("
+                               exit $STATE_UNKNOWN
 fi
 
